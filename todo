@@ -1,0 +1,8 @@
+
+------------------------------- 15-03-2010
+- time_t _atodate(const char* str, int* err) - need fix dates type "2010-02-0s3"
+
+
+------------------------------- 13-03-2010
+- create command-line options
++ add comments to "config" file
