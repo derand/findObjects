@@ -37,6 +37,8 @@ type
     raPositionMaxEdit: TEdit;
     btnButton: TButton;
     dayEdit: TEdit;
+    versionLabel: TLabel;
+    copyrightLabel: TLabel;
     procedure FormShow(Sender: TObject);
     procedure btnBtnClick(Sender: TObject);
     procedure btnButtonClick(Sender: TObject);
