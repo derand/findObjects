@@ -4,41 +4,42 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, FileCtrl, ShellAPI;
+  Dialogs, StdCtrls, FileCtrl, ShellAPI, ExtCtrls, jpeg, ComCtrls;
 
 type
   TForm1 = class(TForm)
-    pathEdit: TEdit;
-    pathBtn: TButton;
+    backgroundImage: TImage;
     lbl1: TLabel;
     lbl2: TLabel;
-    dayEdit: TEdit;
     lbl3: TLabel;
-    startTimeEdit: TEdit;
     lbl4: TLabel;
-    endTimeEdit: TEdit;
     lbl5: TLabel;
-    magEdit: TEdit;
     lbl6: TLabel;
-    umEdit: TEdit;
     lbl7: TLabel;
-    raRateMinEdit: TEdit;
     lbl8: TLabel;
-    raRateMaxEdit: TEdit;
     lbl9: TLabel;
-    declRateMinEdit: TEdit;
     lbl10: TLabel;
-    declRateMaxEdit: TEdit;
     lbl11: TLabel;
-    blackListEdit: TEdit;
-    Label1: TLabel;
-    raPositionMinEdit: TEdit;
+    lbl13: TLabel;
     lbl12: TLabel;
+    pathEdit: TEdit;
+    btnBtn: TButton;
+    startTimeEdit: TEdit;
+    endTimeEdit: TEdit;
+    magEdit: TEdit;
+    umEdit: TEdit;
+    raRateMinEdit: TEdit;
+    raRateMaxEdit: TEdit;
+    declRateMinEdit: TEdit;
+    declRateMaxEdit: TEdit;
+    blackListEdit: TEdit;
+    raPositionMinEdit: TEdit;
     raPositionMaxEdit: TEdit;
-    runButton: TButton;
+    btnButton: TButton;
+    dayEdit: TEdit;
     procedure FormShow(Sender: TObject);
-    procedure pathBtnClick(Sender: TObject);
-    procedure runButtonClick(Sender: TObject);
+    procedure btnBtnClick(Sender: TObject);
+    procedure btnButtonClick(Sender: TObject);
   private
     { Private declarations }
 
@@ -86,7 +87,7 @@ begin
                  pathEdit.Text := val;
               end else if AnsiCompareText(key, 'DAY')=0 then
               begin
-                  dayEdit.Text := val;
+                  dayEdit.text := val;
               end else if AnsiCompareText(key, 'START_OBSERVATION')=0 then
               begin
                   startTimeEdit.Text := val;
@@ -134,25 +135,65 @@ begin
     CloseFile(settingsFile);
 end;
 
+
 procedure tform1.saveSettings();
 var
   settingsFile : TextFile;
 begin
     AssignFile(settingsFile, settingsFileName);
     Rewrite(settingsFile);
-    Writeln(settingsfile, 'EFEM_DIR	= '+pathEdit.text);
-    Writeln(settingsfile, 'DAY = '+dayEdit.text);
-    Writeln(settingsfile, 'START_OBSERVATION	= '+startTimeEdit.text);
-    Writeln(settingsfile, 'END_OBSERVATION	= '+endTimeEdit.text);
-    Writeln(settingsfile, 'MAG	= '+magEdit.text);
-    Writeln(settingsfile, 'UM	= '+umEdit.text);
-    Writeln(settingsfile, 'RA_RATE_MIN	= '+rarateMinEdit.text);
-    Writeln(settingsfile, 'RA_RATE_MAX	= '+raRateMaxEdit.text);
-    Writeln(settingsfile, 'DECL_RATE_MIN	= '+declRateMinEdit.text);
-    Writeln(settingsfile, 'DECL_RATE_MAX	= '+declRateMaxEdit.text);
-    Writeln(settingsfile, 'BLACK_LIST	= '+blackListEdit.text);
-    Writeln(settingsfile, 'RA_POSITION_MIN	= '+raPositionMinEdit.text);
-    Writeln(settingsfile, 'RA_POSITION_MAX	= '+raPositionMaxEdit.text);
+    if Length(Trim(pathEdit.Text)) > 0 then
+    begin
+      Writeln(settingsfile, 'EFEM_DIR	= '+pathEdit.text);
+    end;
+    if Length(Trim(dayEdit.Text)) > 0 then
+    begin
+      Writeln(settingsfile, 'DAY = '+dayEdit.text);
+    end;
+    if Length(Trim(startTimeEdit.Text)) > 0 then
+    begin
+      Writeln(settingsfile, 'START_OBSERVATION	= '+startTimeEdit.text);
+    end;
+    if Length(Trim(endTimeEdit.Text)) > 0 then
+    begin
+      Writeln(settingsfile, 'END_OBSERVATION	= '+endTimeEdit.text);
+    end;
+    if Length(Trim(magEdit.Text)) > 0 then
+    begin
+      Writeln(settingsfile, 'MAG	= '+magEdit.text);
+    end;
+    if Length(Trim(umEdit.Text)) > 0 then
+    begin
+      Writeln(settingsfile, 'UM	= '+umEdit.text);
+    end;
+    if Length(Trim(rarateMinEdit.Text)) > 0 then
+    begin
+      Writeln(settingsfile, 'RA_RATE_MIN	= '+rarateMinEdit.text);
+    end;
+    if Length(Trim(raRateMaxEdit.Text)) > 0 then
+    begin
+      Writeln(settingsfile, 'RA_RATE_MAX	= '+raRateMaxEdit.text);
+    end;
+    if Length(Trim(declRateMinEdit.Text)) > 0 then
+    begin
+      Writeln(settingsfile, 'DECL_RATE_MIN	= '+declRateMinEdit.text);
+    end;
+    if Length(Trim(declRateMaxEdit.Text)) > 0 then
+    begin
+      Writeln(settingsfile, 'DECL_RATE_MAX	= '+declRateMaxEdit.text);
+    end;
+    if Length(Trim(blackListEdit.Text)) > 0 then
+    begin
+      Writeln(settingsfile, 'BLACK_LIST	= '+blackListEdit.text);
+    end;
+    if Length(Trim(raPositionMinEdit.Text)) > 0 then
+    begin
+      Writeln(settingsfile, 'RA_POSITION_MIN	= '+raPositionMinEdit.text);
+    end;
+    if Length(Trim(raPositionMaxEdit.Text)) > 0 then
+    begin
+      Writeln(settingsfile, 'RA_POSITION_MAX	= '+raPositionMaxEdit.text);
+    end;
     Writeln(settingsfile);
     Writeln(settingsfile, '#not changed');
     Writeln(settingsfile, 'REPORT_TYPE = TXT');
@@ -167,7 +208,7 @@ begin
     loadSettings();
 end;
 
-procedure TForm1.pathBtnClick(Sender: TObject);
+procedure TForm1.btnBtnClick(Sender: TObject);
 const
   SELDIRHELP  = 1000;
 var
@@ -181,7 +222,7 @@ begin
   end;
 end;
 
-procedure TForm1.runButtonClick(Sender: TObject);
+procedure TForm1.btnButtonClick(Sender: TObject);
 var
   cmd: string;
 begin

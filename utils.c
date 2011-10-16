@@ -151,6 +151,10 @@ float _ra(const char* str, int* err)
 	float sec=0;
 	char* tmp = delete_spaces(str);
 	*err = sscanf(tmp, "%d %d %f", &hour, &min, &sec)-3;
+	if (*err)
+	{
+		*err = sscanf(tmp, "%d:%d:%f", &hour, &min, &sec)-3;
+	}
 	free(tmp);
 	return hour*10000+min*100+sec;
 }
