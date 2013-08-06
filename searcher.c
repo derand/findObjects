@@ -282,8 +282,8 @@ void searcher_main_loop(settings_t* sttngs)
 	report_t *report_full = report_init(report_full_file_name, sttngs->report_type, report_style_full, (struct settings_t *)sttngs);
 	report_add_file_title(report_short);
 	report_add_file_title(report_full);
-	//for(int i=0; i<vec_count(files); i++)
-	for(int i=5; i<7; i++)
+	for(int i=0; i<vec_count(files); i++)
+	//for(int i=5; i<7; i++)
 	{
 //		searcher_test_file(files[i], sttngs, res_short, res_full);
 		searcher_test_file(files[i], sttngs, report_short, report_full);
