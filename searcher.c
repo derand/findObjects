@@ -23,10 +23,18 @@
 #include "report.h"
 
 
+struct searcher_file_result_t
+{
+	struct searcher_result_t *sr_vec;
+	time_t hour_angle;
+	char *filename;
+};
+
+
 int searcher_test_name(char *name, settings_t* sttngs);
 enum hit_e searcher_test_position(position_t* pos, settings_t *sttngs);
 //int searcher_test_file(char *name, settings_t *sttngs, FILE *result_short, FILE *result_full);
-int searcher_test_file(char *name, settings_t *sttngs, report_t *report_short, report_t *report_full);
+struct searcher_result_t* searcher_test_file(char *name, settings_t *sttngs, report_t *report_short, report_t *report_full);
 
 
 int searcher_test_name(char *name, settings_t* sttngs)
@@ -92,15 +100,15 @@ enum hit_e searcher_test_position(position_t* pos, settings_t *sttngs)
 }
 
 
-int searcher_test_file(char *name, settings_t *sttngs, report_t *report_short, report_t *report_full)
+struct searcher_result_t* searcher_test_file(char *name, settings_t *sttngs, report_t *report_short, report_t *report_full)
 {
 	char *full_path = malloc(sizeof(char)*(strlen(name)+strlen(sttngs->dir)+1));
 	memcpy(full_path, sttngs->dir, strlen(sttngs->dir));
 	memcpy(&full_path[strlen(sttngs->dir)], name, strlen(name));
 	full_path[strlen(name)+strlen(sttngs->dir)] = '\0';
-	$msg("test: %s", full_path);
+	$msg("Checking file \"%s\"", full_path);
 	
-	int rv = 0;
+	struct searcher_result_t *sr = NULL;
 	FILE *f;
 	int lines=0;
 	position_t* pos = 0;
@@ -109,7 +117,6 @@ int searcher_test_file(char *name, settings_t *sttngs, report_t *report_short, r
 	{
 		enum hit_e last_hit = hit_start_ephemerides;
 		enum hit_e hit;
-		struct searcher_result_t *sr;
 		vec_init((void**)&sr, sizeof(struct searcher_result_t), 0, 3);
 		struct searcher_result_t sr_tmp;
 		struct searcher_result_t sr_max_mag;
@@ -127,7 +134,6 @@ int searcher_test_file(char *name, settings_t *sttngs, report_t *report_short, r
 				{
 					if ((hit=searcher_test_position(pos, sttngs))!=last_hit)
 					{
-						$msg("----: %d %s", hit, pos->time_str);
 						if (hit==hit_done)
 						{
 							sr_tmp.in = 0;
@@ -185,7 +191,6 @@ int searcher_test_file(char *name, settings_t *sttngs, report_t *report_short, r
 				lines++;
 			}
 		}
-		$msg("----: %d/%d", last_hit, hit);
 		if (!first)
 		{
 //			fprintf(result_full, "\n\n");
@@ -213,12 +218,12 @@ int searcher_test_file(char *name, settings_t *sttngs, report_t *report_short, r
 				report_add_footer(report_short);
 			}
 
-			for(int i=0; i<vec_count(sr); i++)
-			{
-				position_free((position_t *)sr[i].pos);
-			}
+			//for(int i=0; i<vec_count(sr); i++)
+			//{
+			//	position_free(sr[i].pos);
+			//}
 		}
-		vec_free(sr);
+		//vec_free(sr);
 		
 		free(buff);
 		fclose(f);
@@ -226,11 +231,58 @@ int searcher_test_file(char *name, settings_t *sttngs, report_t *report_short, r
 	else
 	{
 		$msg("Can't read file \"%s\"", full_path);
-		rv = 1;
 	}
 	
 	free(full_path);
-	return rv;
+	return sr;
+}
+
+void searcher_build_custom_report(settings_t* sttngs, struct searcher_file_result_t* sfr)
+{
+	for (int i=0; i<vec_count(sfr); i++)
+	{
+		struct searcher_file_result_t tmp_sfr = sfr[i];
+		for(int j=0; j<vec_count(tmp_sfr.sr_vec); j++)
+		{
+			if (tmp_sfr.sr_vec[j].hit==hit_done)
+			{
+				sfr[i].hour_angle = tmp_sfr.sr_vec[j].pos->_hour_angle_val;
+				break;
+			}
+		}
+	}
+
+	for (int i=0; i<vec_count(sfr)-1; i++)
+	{
+		for (int j=i; j<vec_count(sfr); j++)
+		{
+			if (sfr[i].hour_angle>sfr[j].hour_angle)
+			{
+				struct searcher_file_result_t tmp_sfr = sfr[i];
+				sfr[i] = sfr[j];
+				sfr[j] = tmp_sfr;
+			}
+		}	
+	}
+
+	char *report_custom_file_name = "./result_custom.txt";
+	if (sttngs->report_type==report_type_html)
+	{
+		report_custom_file_name = "./result_custom.html";
+	}
+	report_t *report_custom = report_init(report_custom_file_name, sttngs->report_type, report_style_custom, (struct settings_t *)sttngs);
+	report_add_file_title(report_custom);
+	for (int i=0; i<vec_count(sfr); i++)
+	{
+		report_add_title(report_custom, sfr[i].filename);
+		for(int j=0; j<vec_count(sfr[i].sr_vec); j++)
+		{
+			report_add_entry(report_custom, &(sfr[i].sr_vec[j]));
+		}
+		report_add_footer(report_custom);
+	}
+	report_add_file_footer(report_custom);
+	report_free(report_custom);
 }
 
 void searcher_main_loop(settings_t* sttngs)
@@ -271,6 +323,10 @@ void searcher_main_loop(settings_t* sttngs)
 		exit(1);
 	}
 */
+	struct searcher_file_result_t* sfr;
+	vec_init((void**)&sfr, sizeof(struct searcher_file_result_t), 0, vec_count(files));
+	struct searcher_file_result_t tmp_sfr;
+
 	char *report_short_file_name = "./result_short.txt";
 	char *report_full_file_name = "./result_full.txt";
 	if (sttngs->report_type==report_type_html)
@@ -286,7 +342,21 @@ void searcher_main_loop(settings_t* sttngs)
 	//for(int i=5; i<7; i++)
 	{
 //		searcher_test_file(files[i], sttngs, res_short, res_full);
-		searcher_test_file(files[i], sttngs, report_short, report_full);
+		struct searcher_result_t *sr = searcher_test_file(files[i], sttngs, report_short, report_full);
+		if (sr != NULL)		// for custom report only
+		{
+			if (vec_count(sr))
+			{
+				tmp_sfr.sr_vec = sr;
+				tmp_sfr.filename = files[i];
+				//tmp_sfr.filename = strdup(files[i]);
+				vec_add((void **)&sfr, (void *)&tmp_sfr);
+			}
+			else
+			{
+				vec_free(sr);
+			}
+		}
 	}
 	report_add_file_footer(report_short);
 	report_add_file_footer(report_full);
@@ -296,6 +366,21 @@ void searcher_main_loop(settings_t* sttngs)
 
 //	fclose(res_full);
 //	fclose(res_short);
+
+	searcher_build_custom_report(sttngs, sfr);
+
+	for (int i=0; i<vec_count(sfr); i++)
+	{
+		struct searcher_file_result_t tmp_sfr = sfr[i];
+		$log("%s %ld", tmp_sfr.filename, tmp_sfr.hour_angle);
+		for(int j=0; j<vec_count(tmp_sfr.sr_vec); j++)
+		{
+			position_free(tmp_sfr.sr_vec[j].pos);
+		}
+		vec_free(tmp_sfr.sr_vec);
+		//free(tmp_sfr->filename);
+	}
+	vec_free(sfr);
 
 	for(int i=0; i<vec_count(files); i++)
 	{

@@ -29,7 +29,7 @@ $(PROG): $(OBJS)
 	$(CC) $(CFLAGS) -MM $< > $@
 
 test:	$(PROG)
-	$(PROG)
+	./$(PROG)
 
 doc:	
 	rm -f -R docs

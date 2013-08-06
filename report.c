@@ -88,7 +88,7 @@ int report_add_entry(report_t *report, struct searcher_result_t *sr)
 	switch (report->type)
 	{
 		case report_type_txt:
-				if (report->style==report_style_short)
+				if (report->style==report_style_short || report->style==report_style_custom)
 				{
 					rv = report_add_txt_short_entry(report, sr);
 				} else if (report->style==report_style_full)
@@ -97,7 +97,7 @@ int report_add_entry(report_t *report, struct searcher_result_t *sr)
 				}
 				break;
 		case report_type_html:
-				if (report->style==report_style_short)
+				if (report->style==report_style_short || report->style==report_style_custom)
 				{
 					rv = report_add_html_short_entry(report, sr);
 				} else if (report->style==report_style_full)
@@ -145,7 +145,7 @@ int report_add_title(report_t *report, const char *name)
 	switch (report->type)
 	{
 		case report_type_txt:
-				if (report->style==report_style_short)
+				if (report->style==report_style_short || report->style==report_style_custom)
 				{
 					rv = report_add_txt_short_title(report, name);
 				} else if (report->style==report_style_full)
@@ -154,7 +154,7 @@ int report_add_title(report_t *report, const char *name)
 				}
 				break;
 		case report_type_html:
-				if (report->style==report_style_short)
+				if (report->style==report_style_short || report->style==report_style_custom)
 				{
 					rv = report_add_html_short_title(report, name);
 				} else if (report->style==report_style_full)
@@ -242,7 +242,7 @@ int report_add_file_title(report_t *report)
 				}				
 				break;
 		case report_type_html:
-				if (report->style==report_style_short)
+				if (report->style==report_style_short || report->style==report_style_custom)
 				{
 					rv = report_add_html_short_file_title(report);
 				} else if (report->style==report_style_full)
@@ -266,7 +266,7 @@ int report_add_file_footer(report_t *report)
 				}				
 				break;
 		case report_type_html:
-				if (report->style==report_style_short)
+				if (report->style==report_style_short || report->style==report_style_custom)
 				{
 					fprintf(report->rf, "</body></html>\n");
 				} else if (report->style==report_style_full)

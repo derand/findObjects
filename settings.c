@@ -133,9 +133,9 @@ void settings_dump(settings_t* sttngs)
 
 int settings_set_variable(const char* key, const char* val, settings_t* sttngs)
 {
-	char* _key = delete_spaces(key);
+	char* _key = str_strip(key);
 	upper_case(_key);
-	char* _val = delete_spaces(val);
+	char* _val = str_strip(val);
 	int rv = 0;
 	if (strcmp(_key, "START_OBSERVATION")==0)
 	{
@@ -188,7 +188,7 @@ int settings_set_variable(const char* key, const char* val, settings_t* sttngs)
 				if (flag)
 				{
 					_val[i]='\0';
-					tmp = delete_spaces(str);
+					tmp = str_strip(str);
 					if (strlen(tmp))
 					{
 						vec_add((void **)&sttngs->black_list, (void *)&tmp);
@@ -206,7 +206,7 @@ int settings_set_variable(const char* key, const char* val, settings_t* sttngs)
 				flag=1;
 			}
 		}
-		tmp = delete_spaces(str);
+		tmp = str_strip(str);
 		if (strlen(tmp))
 		{
 			vec_add((void **)&sttngs->black_list, (void *)&tmp);

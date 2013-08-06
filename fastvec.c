@@ -113,5 +113,5 @@ void* vec_clone(void* this)
   size_t count = sizeof(list_impl) + temp->compacity * temp->rec_size;
   void* temp2 = malloc (count);
   memcpy(temp2,temp,count);
-  return temp2;
+  return ((list_impl*)temp2)+1;
 }

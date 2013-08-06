@@ -12,12 +12,13 @@
 #define $log(s,...)	fprintf(stderr,"#log %s <%s:%u>:\t" s "\n", __func__,__FILE__,__LINE__,__VA_ARGS__)
 
 void upper_case(char *str);
-char* delete_spaces(const char* str);
+char* str_strip(const char* str);
 void read_line(FILE* f, char *buff);
 
 
 float _atof(const char* str, int* err);
 time_t _atodate(const char* str, int* err);
+time_t _str2time(const char* str, int* err, const char *format);
 time_t _atotime(const char* str, int* err);
 
 void sfree(void *var);

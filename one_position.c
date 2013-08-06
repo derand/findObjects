@@ -46,7 +46,7 @@ void position_free(position_t *pos)
 position_t* position_from_str(const char *str)
 {
 	position_t* rv = position_init();
-	char* line = delete_spaces(str);
+	char* line = str_strip(str);
 	
 	int k=-2;
 	char** as_array;
@@ -102,6 +102,8 @@ position_t* position_from_str(const char *str)
 		as_array[k+1][strlen(as_array[k+1])]=' ';
 		as_array[k+2][strlen(as_array[k+2])]=' ';
 		rv->hour_ang = strdup(as_array[k+1]);
+		rv->_hour_angle_val = _str2time(rv->hour_ang, &err, "%d %d %d");
+		if (err) goto _err01;
 		k+=3;
 		rv->az = _atof(as_array[++k], &err);
 		if (err) goto _err01;

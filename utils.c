@@ -23,7 +23,7 @@ void upper_case(char *str)
 	}
 }
 
-char* delete_spaces(const char* str)
+char* str_strip(const char* str)
 {
 	int f=0;
 	int e=strlen(str)-1;
@@ -64,7 +64,7 @@ void sfree(void *var)
 
 float _atof(const char* str, int* err)
 {
-	char* tmp = delete_spaces(str);
+	char* tmp = str_strip(str);
 	for (int i=0; i<strlen(tmp); i++)
 	{
 		if ((tmp[i]<'0' || tmp[i]>'9') && tmp[i]!='.' && tmp[i]!=',' && tmp[i]!='-')
@@ -85,7 +85,7 @@ time_t _atodate(const char* str, int* err)
 	int year;
 	int month;
 	int day;
-	char* tmp = delete_spaces(str);
+	char* tmp = str_strip(str);
 	*err = sscanf(tmp, "%d-%d-%d", &year, &month, &day)-3;
 	free(tmp);
 	struct tm *tm = malloc(sizeof(struct tm));
@@ -102,15 +102,20 @@ time_t _atodate(const char* str, int* err)
 //	return year*10000+month*100+day;
 }
 
-time_t _atotime(const char* str, int* err)
+time_t _str2time(const char* str, int* err, const char *format)
 {
 	int hour=0;
 	int min=0;
 	int sec=0;
-	char* tmp = delete_spaces(str);
-	*err = sscanf(tmp, "%d:%d:%d", &hour, &min, &sec)-3;
+	char* tmp = str_strip(str);
+	*err = sscanf(tmp, format, &hour, &min, &sec)-3;
 	free(tmp);
 	return hour*60*60+min*60+sec;
+}
+
+time_t _atotime(const char* str, int* err)
+{
+	return _str2time(str, err, "%d:%d:%d");
 }
 
 char *time2str(time_t tm, int type)
@@ -149,7 +154,7 @@ float _ra(const char* str, int* err)
 	int hour=0;
 	int min=0;
 	float sec=0;
-	char* tmp = delete_spaces(str);
+	char* tmp = str_strip(str);
 	*err = sscanf(tmp, "%d %d %f", &hour, &min, &sec)-3;
 	if (*err)
 	{

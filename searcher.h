@@ -9,7 +9,7 @@
  
 enum hit_e
 {
-	hit_done=0,
+	hit_done=0, 		// time for observe object
 	hit_low_height=1,
 	hit_low_mag=2,
 	hit_fast=3,

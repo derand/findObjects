@@ -16,7 +16,8 @@ struct settings_t;
 typedef enum
 {
 	report_style_short=0,
-	report_style_full=1
+	report_style_full=1,
+	report_style_custom=2
 } report_style_e;
 
 

@@ -25,6 +25,7 @@ typedef struct position_t
 	
 	char *time_str;
 	float __ra;
+	time_t _hour_angle_val;
 } position_t;
 
 position_t *position_init();
