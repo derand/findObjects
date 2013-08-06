@@ -9,7 +9,7 @@ DAY					=  2010-02-10
 # start observation time
 START_OBSERVATION	=  16:00
 # end observation time
-END_OBSERVATION		=  04:00
+END_OBSERVATION		=  02:20
 # minimal magnitude
 MAG					=  16.2
 UM					=  20.0

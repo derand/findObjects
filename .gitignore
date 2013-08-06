@@ -1,0 +1,19 @@
+
+# app
+findObjects
+
+# c object files 
+*.d
+*.o
+
+# reports 
+result_*.txt
+result_*.html
+
+# OS X generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+Icon?
+

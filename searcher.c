@@ -65,7 +65,7 @@ enum hit_e searcher_test_position(position_t* pos, settings_t *sttngs)
 	if (pos->timestamp < sttngs->start)
 	{
 		rv = hit_start_ephemerides;
-	} else if (pos->timestamp > sttngs->stop)
+	} else if (pos->timestamp >= sttngs->stop)
 	{
 		rv = hit_end_ephemerides;
 	} else if (pos->shadow)
@@ -112,6 +112,7 @@ int searcher_test_file(char *name, settings_t *sttngs, report_t *report_short, r
 		struct searcher_result_t *sr;
 		vec_init((void**)&sr, sizeof(struct searcher_result_t), 0, 3);
 		struct searcher_result_t sr_tmp;
+		struct searcher_result_t sr_max_mag;
 
 		char *buff = malloc(sizeof(char)*1024);
 		int first=1;
@@ -126,14 +127,20 @@ int searcher_test_file(char *name, settings_t *sttngs, report_t *report_short, r
 				{
 					if ((hit=searcher_test_position(pos, sttngs))!=last_hit)
 					{
+						$msg("----: %d %s", hit, pos->time_str);
 						if (hit==hit_done)
 						{
 							sr_tmp.in = 0;
 							sr_tmp.pos = (struct position_t *)position_cpy(pos);
 							sr_tmp.hit = last_hit;
 							vec_add((void **)&sr, (void *)&sr_tmp);
-						} if (last_hit==hit_done)
+
+							sr_max_mag.pos = (struct position_t *)position_cpy(pos);
+							sr_max_mag.hit = hit_done;
+						} else if (last_hit==hit_done)
 						{
+							vec_add((void **)&sr, (void *)&sr_max_mag);
+
 							sr_tmp.in = 0;
 							sr_tmp.pos = (struct position_t *)position_cpy(last_pos);
 							sr_tmp.hit = hit;
@@ -156,6 +163,12 @@ int searcher_test_file(char *name, settings_t *sttngs, report_t *report_short, r
 						sr_tmp.pos = pos;
 						sr_tmp.hit = hit;
 						report_add_entry(report_full, &sr_tmp);
+
+						if (sr_max_mag.pos->mag > pos->mag)
+						{
+							position_free(sr_max_mag.pos);
+							sr_max_mag.pos = (struct position_t *)position_cpy(pos);
+						}
 /*
 						ch = time2str(pos->timestamp, 1);
 						fprintf(result_full, "%19s %11s %10s %12.2f %12.2f %11s %8.3f %13.3f %6.2f %6d %7.2f\n", pos->time_str, pos->ra_s, pos->decl_s, pos->ra, pos->decl, pos->hour_ang, pos->az, pos->um, pos->phase, pos->range, pos->mag);
@@ -172,6 +185,7 @@ int searcher_test_file(char *name, settings_t *sttngs, report_t *report_short, r
 				lines++;
 			}
 		}
+		$msg("----: %d/%d", last_hit, hit);
 		if (!first)
 		{
 //			fprintf(result_full, "\n\n");
@@ -268,7 +282,8 @@ void searcher_main_loop(settings_t* sttngs)
 	report_t *report_full = report_init(report_full_file_name, sttngs->report_type, report_style_full, (struct settings_t *)sttngs);
 	report_add_file_title(report_short);
 	report_add_file_title(report_full);
-	for(int i=0; i<vec_count(files); i++)
+	//for(int i=0; i<vec_count(files); i++)
+	for(int i=5; i<7; i++)
 	{
 //		searcher_test_file(files[i], sttngs, res_short, res_full);
 		searcher_test_file(files[i], sttngs, report_short, report_full);

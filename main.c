@@ -26,7 +26,7 @@ int bad_params()
 
 int main(int argc, char *argv[])
 {
-	printf("Find Objects version 0.15\r\n");
+	printf("Find Objects version 0.16\r\n");
 	char *fn = "config.txt";
 	if (argc==2)
 	{
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 			printf("\r\nAUTHOR\r\n");
 			printf("  Writen by Andrey Derevyagin spesial for Aza Klabukova");
 			printf("\r\nCOPYRIGHT\r\n");
-			printf("  Copyright © 2010-2011 Andrey Derevuagin");
+			printf("  Copyright © 2010-2013 Andrey Derevuagin");
 			printf("\r\nBUGS\r\n");
 			printf("  If you feel you have found a bug in \"Find Objects\", please email me 2derand+findobjects@gmail.com\r\n");
 			printf("\r\n");
