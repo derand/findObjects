@@ -1,0 +1,27 @@
+# comments in this file starts from '#" charset
+
+# this parametr set directory with efemerid files,
+# name of files looks like "34234.txt" 
+EFEM_DIR			=  efem_test/
+
+# day of observation (if not set getted current day)
+DAY					=  2010-02-10
+# start observation time
+START_OBSERVATION	=  16:00
+# end observation time
+END_OBSERVATION		=  02:20
+# minimal magnitude
+MAG					=  16.2
+UM					=  20.0
+RA_RATE_MIN			= +00500.0
+RA_Rate_MAX			=  1300.0
+DECL_RATE_MIN		= -280.0
+DECL_RATE_MAX		=  280.0
+BLACK_LIST			=  95332 95301
+
+RA_POSITION_MIN		= 10 20 00
+RA_POSITION_MAX		= 14 20 00
+
+# can be TXT and HTML
+REPORT_TYPE			= HTML
+REPORT_HTML_FONT_SIZE = 10pt

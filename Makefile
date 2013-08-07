@@ -29,7 +29,14 @@ $(PROG): $(OBJS)
 	$(CC) $(CFLAGS) -MM $< > $@
 
 test:	$(PROG)
-	./$(PROG)
+	./$(PROG) ./tests/test1.txt
+	./$(PROG) ./tests/test2.txt
+	diff ./result_full.txt ./tests/result_full.txt
+	diff ./result_short.txt ./tests/result_short.txt
+	diff ./result_custom.txt ./tests/result_custom.txt
+	diff ./result_full.html ./tests/result_full.html
+	diff ./result_short.html ./tests/result_short.html
+	diff ./result_custom.html ./tests/result_custom.html
 
 doc:	
 	rm -f -R docs
