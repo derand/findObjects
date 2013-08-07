@@ -366,7 +366,6 @@ void searcher_main_loop(settings_t* sttngs)
 	for (int i=0; i<vec_count(sfr); i++)
 	{
 		struct searcher_file_result_t tmp_sfr = sfr[i];
-		$log("%s %ld", tmp_sfr.filename, tmp_sfr.hour_angle);
 		for(int j=0; j<vec_count(tmp_sfr.sr_vec); j++)
 		{
 			position_free(tmp_sfr.sr_vec[j].pos);

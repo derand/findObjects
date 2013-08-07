@@ -131,7 +131,7 @@ int report_add_txt_full_title(report_t *report, const char *name)
 int report_add_html_short_title(report_t *report, const char *name)
 {
 	fprintf(report->rf, "<br><p>%s</p>\n", name);
-	fprintf(report->rf, "<table border=\"1\"><tr><td></td><td>UTC</td><td>DECL</td><td>RARete</td><td>DECLRate</td><td>HourAng</td><td>Um</td><td>Mag</td></tr>\n");
+	fprintf(report->rf, "<table border=\"1\"><tr><td></td><td>UTC</td><td>DECL</td><td>RARate</td><td>DECLRate</td><td>HourAng</td><td>Um</td><td>Mag</td></tr>\n");
 	return 0;
 }
 
@@ -212,25 +212,22 @@ int report_add_hit(report_t *report, enum hit_e hit)
 	return rv;
 }
 
-int report_add_html_short_file_title(report_t *report)
-{
-	fprintf(report->rf, "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title>Short report</title>");
-	fprintf(report->rf, "<style type=\"text/css\">\n");
-	fprintf(report->rf, "body, table {font-size: %s;}\n", report->sttngs->report_html_font_size);
-	fprintf(report->rf, "</style>\n");
-	fprintf(report->rf, "</head><body>\n");
-	return 0;
-}
-
 int report_add_html_full_file_title(report_t *report)
 {
 	fprintf(report->rf, "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title>Short report</title>");
 	fprintf(report->rf, "<style type=\"text/css\">\n");
 	fprintf(report->rf, "body, table {font-size: %s;}\n", report->sttngs->report_html_font_size);
+//	fprintf(report->rf, "div.code * {font-family: courier;}\n");
 	fprintf(report->rf, "</style>\n");
 	fprintf(report->rf, "</head><body>\n");
 	return 0;
 }
+
+int report_add_html_short_file_title(report_t *report)
+{
+	return report_add_html_full_file_title(report);
+}
+
 
 
 int report_add_file_title(report_t *report)
@@ -257,11 +254,40 @@ int report_add_file_title(report_t *report)
 	return rv;
 }
 
+int *_observation_time_scale(report_t *report, struct searcher_result_t *sr_vec, int *buff, int steps)
+{
+	time_t tm = report->sttngs->start;
+	int j;
+	int val;
+	for (int st=0; st<steps; st++)
+	{
+		for (j=0; j<vec_count(sr_vec); j++)
+		{
+			if (tm <= sr_vec[j].pos->timestamp)
+			{
+				break;
+			}
+		}
+		if (j==vec_count(sr_vec))
+		{
+			val = sr_vec[j-1].hit==hit_done;
+		}
+		else if (j==0)
+		{
+			val = sr_vec[0].hit==hit_done;
+		}
+		else
+		{
+			val = sr_vec[j-1].hit==hit_done || sr_vec[j].hit==hit_done;
+		}
+		buff[st] = val;
+		tm += TIME_STEP_SIZE;
+	}
+	return buff;
+}
+
 int report_add_txt_custom_file_footer(report_t *report, struct searcher_file_result_t *sfr)
 {
-	char* start_str = time2str(report->sttngs->start, 1);
-	char* end_str = time2str(report->sttngs->stop, 1);
-
 	char *tmp_str;
 	char *tmp;
 	size_t steps = (report->sttngs->stop-report->sttngs->start)/TIME_STEP_SIZE;
@@ -300,44 +326,85 @@ int report_add_txt_custom_file_footer(report_t *report, struct searcher_file_res
 		fprintf(report->rf, "%s\t", tmp_str);
 		free(tmp_str);
 
+		int *buff = malloc(sizeof(int)*steps);
+		buff = _observation_time_scale(report, sfr[i].sr_vec, buff, steps);
+
 		tmp_str = malloc(sizeof(char)*steps*TIME_STEP_CHARS_COUNT+1);
 		tmp_str[sizeof(char)*steps*TIME_STEP_CHARS_COUNT] = '\0';
-		tm = report->sttngs->start;
 		for (int st=0; st<steps; st++)
 		{
-			for (j=0; j<vec_count(sfr[i].sr_vec); j++)
-			{
-				if (tm <= sfr[i].sr_vec[j].pos->timestamp)
-				{
-					break;
-				}
-			}
-			if (j==vec_count(sfr[i].sr_vec))
-			{
-				ch = (sfr[i].sr_vec[j-1].hit==hit_done)?'*':'-';
-			}
-			else if (j==0)
-			{
-				ch = (sfr[i].sr_vec[0].hit==hit_done)?'*':'-';
-			}
-			else
-			{
-				ch = (sfr[i].sr_vec[j-1].hit==hit_done || sfr[i].sr_vec[j].hit==hit_done)?'*':'-';
-			}
 			for (j=0; j<TIME_STEP_CHARS_COUNT; j++)
 			{
-				tmp_str[st*TIME_STEP_CHARS_COUNT+j] = ch;
+				tmp_str[st*TIME_STEP_CHARS_COUNT+j] = buff[st]?'*':'-';
 			}
-			tm += TIME_STEP_SIZE;
 		}
+		free(buff);
 		fprintf(report->rf, tmp_str);
 		free(tmp_str);
 
 		fprintf(report->rf, "\n");
 	}
 
-	free(start_str);
-	free(end_str);
+	return 0;
+}
+
+int report_add_html_custom_file_footer(report_t *report, struct searcher_file_result_t *sfr)
+{
+	char *tmp_str;
+	char *tmp;
+	size_t steps = (report->sttngs->stop-report->sttngs->start)/TIME_STEP_SIZE;
+
+	time_t tm = report->sttngs->start;
+	int j;
+	fprintf(report->rf, "<div style=\"font-family: courier;\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+	for (int st=0; st<steps; st++)
+	{
+		struct tm *tminfo = gmtime(&tm);
+		if (tminfo->tm_min == 0)
+		{
+			fprintf(report->rf, "%02d", tminfo->tm_hour);
+		}
+		else
+		{
+			for (j=0; j<TIME_STEP_CHARS_COUNT; j++)
+			{
+				fprintf(report->rf, "&nbsp;");
+			}
+		}
+		tm += TIME_STEP_SIZE;
+	}
+	fprintf(report->rf, "<br>\n");
+
+	for (int i=0; i<vec_count(sfr); i++)
+	{
+		tmp_str = strdup(sfr[i].filename);
+		if((tmp = strstr(tmp_str, ".")) != NULL)
+		{
+			//tmp[0] = '\0';
+		}
+		fprintf(report->rf, "%s&nbsp;&nbsp;", tmp_str);
+		free(tmp_str);
+
+		int *buff = malloc(sizeof(int)*steps);
+		buff = _observation_time_scale(report, sfr[i].sr_vec, buff, steps);
+
+		tmp_str = malloc(sizeof(char)*steps*TIME_STEP_CHARS_COUNT+1);
+		tmp_str[sizeof(char)*steps*TIME_STEP_CHARS_COUNT] = '\0';
+		for (int st=0; st<steps; st++)
+		{
+			for (j=0; j<TIME_STEP_CHARS_COUNT; j++)
+			{
+				tmp_str[st*TIME_STEP_CHARS_COUNT+j] = buff[st]?'*':'-';
+			}
+		}
+		free(buff);
+		fprintf(report->rf, tmp_str);
+		free(tmp_str);
+
+		fprintf(report->rf, "<br>\n");
+	}
+	fprintf(report->rf, "</div>\n</body></html>\n");
+
 	return 0;
 }
 
@@ -353,9 +420,12 @@ int report_add_file_footer(report_t *report, struct searcher_file_result_t *sfr)
 				}				
 				break;
 		case report_type_html:
-				if (report->style==report_style_short || report->style==report_style_custom)
+				if (report->style==report_style_short)
 				{
 					fprintf(report->rf, "</body></html>\n");
+				} else if (report->style==report_style_custom)
+				{
+					rv = report_add_html_custom_file_footer(report, sfr);
 				} else if (report->style==report_style_full)
 				{
 					fprintf(report->rf, "</body></html>\n");
