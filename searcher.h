@@ -21,12 +21,22 @@ enum hit_e
 
 struct position_t;
 
+// one row event change hit
 struct searcher_result_t
 {
 	enum hit_e hit;
 	int in;
 	struct position_t *pos;
 };
+
+// all file events chenge hit
+struct searcher_file_result_t
+{
+	struct searcher_result_t *sr_vec;	// vector
+	time_t hour_angle;					// hour angle at this event
+	char *filename;						// file name without path
+};
+
 
 void searcher_main_loop(settings_t* sttngs);
 

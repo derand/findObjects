@@ -146,7 +146,29 @@ time_t tz_diff()
 
 time_t my_timegm(struct tm* _tm)
 {
-	return mktime(_tm)+tz_diff();
+	//return mktime(_tm)+tz_diff();
+	time_t ret;
+	char *tz;
+
+	tz = getenv("TZ");
+	if (tz)
+	{
+		tz = strdup(tz);
+	}
+	setenv("TZ", "", 1);
+	tzset();
+	ret = mktime(_tm);
+	if (tz)
+	{
+		setenv("TZ", tz, 1);
+		free(tz);
+	}
+	else
+	{
+		unsetenv("TZ");
+	}
+	tzset();
+	return ret;
 }
 
 float _ra(const char* str, int* err)

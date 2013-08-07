@@ -8,7 +8,7 @@
  */
  
 #include <stdio.h>
-//#include <string.h>
+#include <string.h>
 #include <stdlib.h>
 //#include <stdint.h>
 #include <time.h>
@@ -18,10 +18,13 @@
 #include "searcher.h"
 #include "one_position.h"
 #include "utils.h"
+#include "fastvec.h"
 
 
 static char* hit_pref[]= {"--","НЗ","СЛ","БС","ТТ","НН","КК","ЛУ"};
 
+#define TIME_STEP_SIZE			(60*10)
+#define TIME_STEP_CHARS_COUNT	2
 
 
 report_t *report_init(const char *file_name, enum report_type_e rt, report_style_e rs, struct settings_t *sttngs)
@@ -114,7 +117,7 @@ int report_add_entry(report_t *report, struct searcher_result_t *sr)
 int report_add_txt_short_title(report_t *report, const char *name)
 {
 	fprintf(report->rf, "%s\r\n", name);
-	fprintf(report->rf, "      UTC      DECL       RARete     DECLRate    HourAng          Um       Mag\r\n");
+	fprintf(report->rf, "      UTC      DECL       RARate     DECLRate    HourAng          Um       Mag\r\n");
 	return 0;
 }
 
@@ -135,7 +138,7 @@ int report_add_html_short_title(report_t *report, const char *name)
 int report_add_html_full_title(report_t *report, const char *name)
 {
 	fprintf(report->rf, "<br><p>%s</p>\n", name);
-	fprintf(report->rf, "<table border=\"1\"><tr><td>Date(UTC)</td><td>RA</td><td>DECL</td><td>RARate</td><td>DeclRate</td><td>HourAng</td><td>Az</td><td>Um</td><td>Phase</td><td>Range</td><td>Mag</td></tr>\n");
+	fprintf(report->rf, "<table border=\"1\"><tr><td>Time(UTC)</td><td>RA</td><td>DECL</td><td>RARate</td><td>DeclRate</td><td>HourAng</td><td>Az</td><td>Um</td><td>Phase</td><td>Range</td><td>Mag</td></tr>\n");
 	return 0;
 }
 
@@ -254,15 +257,99 @@ int report_add_file_title(report_t *report)
 	return rv;
 }
 
-int report_add_file_footer(report_t *report)
+int report_add_txt_custom_file_footer(report_t *report, struct searcher_file_result_t *sfr)
+{
+	char* start_str = time2str(report->sttngs->start, 1);
+	char* end_str = time2str(report->sttngs->stop, 1);
+
+	char *tmp_str;
+	char *tmp;
+	size_t steps = (report->sttngs->stop-report->sttngs->start)/TIME_STEP_SIZE;
+
+	tmp_str = malloc(sizeof(char)*steps*TIME_STEP_CHARS_COUNT+1);
+	tmp_str[sizeof(char)*steps*TIME_STEP_CHARS_COUNT] = '\0';
+	time_t tm = report->sttngs->start;
+	char ch=' ';
+	int j;
+	for (int st=0; st<steps; st++)
+	{
+		struct tm *tminfo = gmtime(&tm);
+		if (tminfo->tm_min == 0)
+		{
+			sprintf(&tmp_str[st*TIME_STEP_CHARS_COUNT], "%02d", tminfo->tm_hour);
+		}
+		else
+		{
+			for (j=0; j<TIME_STEP_CHARS_COUNT; j++)
+			{
+				tmp_str[st*TIME_STEP_CHARS_COUNT+j] = ch;
+			}
+		}
+		tm += TIME_STEP_SIZE;
+	}
+	fprintf(report->rf, "\t\t%s\n", tmp_str);
+	free(tmp_str);
+
+	for (int i=0; i<vec_count(sfr); i++)
+	{
+		tmp_str = strdup(sfr[i].filename);
+		if((tmp = strstr(tmp_str, ".")) != NULL)
+		{
+			//tmp[0] = '\0';
+		}
+		fprintf(report->rf, "%s\t", tmp_str);
+		free(tmp_str);
+
+		tmp_str = malloc(sizeof(char)*steps*TIME_STEP_CHARS_COUNT+1);
+		tmp_str[sizeof(char)*steps*TIME_STEP_CHARS_COUNT] = '\0';
+		tm = report->sttngs->start;
+		for (int st=0; st<steps; st++)
+		{
+			for (j=0; j<vec_count(sfr[i].sr_vec); j++)
+			{
+				if (tm <= sfr[i].sr_vec[j].pos->timestamp)
+				{
+					break;
+				}
+			}
+			if (j==vec_count(sfr[i].sr_vec))
+			{
+				ch = (sfr[i].sr_vec[j-1].hit==hit_done)?'*':'-';
+			}
+			else if (j==0)
+			{
+				ch = (sfr[i].sr_vec[0].hit==hit_done)?'*':'-';
+			}
+			else
+			{
+				ch = (sfr[i].sr_vec[j-1].hit==hit_done || sfr[i].sr_vec[j].hit==hit_done)?'*':'-';
+			}
+			for (j=0; j<TIME_STEP_CHARS_COUNT; j++)
+			{
+				tmp_str[st*TIME_STEP_CHARS_COUNT+j] = ch;
+			}
+			tm += TIME_STEP_SIZE;
+		}
+		fprintf(report->rf, tmp_str);
+		free(tmp_str);
+
+		fprintf(report->rf, "\n");
+	}
+
+	free(start_str);
+	free(end_str);
+	return 0;
+}
+
+int report_add_file_footer(report_t *report, struct searcher_file_result_t *sfr)
 {
 	int rv=0;
 	switch (report->type)
 	{
 		case report_type_txt:
-				if (report->style==report_style_full)
+				if (report->style==report_style_custom)
 				{
-//					fprintf(report->rf, "");
+					rv = report_add_txt_custom_file_footer(report, sfr);
 				}				
 				break;
 		case report_type_html:

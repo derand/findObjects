@@ -23,16 +23,8 @@
 #include "report.h"
 
 
-struct searcher_file_result_t
-{
-	struct searcher_result_t *sr_vec;
-	time_t hour_angle;
-	char *filename;
-};
-
-
 int searcher_test_name(char *name, settings_t* sttngs);
-enum hit_e searcher_test_position(position_t* pos, settings_t *sttngs);
+enum hit_e searcher_check_position(position_t* pos, settings_t *sttngs);
 //int searcher_test_file(char *name, settings_t *sttngs, FILE *result_short, FILE *result_full);
 struct searcher_result_t* searcher_test_file(char *name, settings_t *sttngs, report_t *report_short, report_t *report_full);
 
@@ -67,7 +59,7 @@ exit001:
 	return rv;
 }
 
-enum hit_e searcher_test_position(position_t* pos, settings_t *sttngs)
+enum hit_e searcher_check_position(position_t* pos, settings_t *sttngs)
 {
 	enum hit_e rv = hit_done;
 	if (pos->timestamp < sttngs->start)
@@ -132,7 +124,7 @@ struct searcher_result_t* searcher_test_file(char *name, settings_t *sttngs, rep
 				pos = position_from_str(buff);
 				if (pos)
 				{
-					if ((hit=searcher_test_position(pos, sttngs))!=last_hit)
+					if ((hit=searcher_check_position(pos, sttngs))!=last_hit)
 					{
 						if (hit==hit_done)
 						{
@@ -239,6 +231,7 @@ struct searcher_result_t* searcher_test_file(char *name, settings_t *sttngs, rep
 
 void searcher_build_custom_report(settings_t* sttngs, struct searcher_file_result_t* sfr)
 {
+	// set hour angle
 	for (int i=0; i<vec_count(sfr); i++)
 	{
 		struct searcher_file_result_t tmp_sfr = sfr[i];
@@ -252,6 +245,7 @@ void searcher_build_custom_report(settings_t* sttngs, struct searcher_file_resul
 		}
 	}
 
+	// sort files by hour angle
 	for (int i=0; i<vec_count(sfr)-1; i++)
 	{
 		for (int j=i; j<vec_count(sfr); j++)
@@ -281,7 +275,7 @@ void searcher_build_custom_report(settings_t* sttngs, struct searcher_file_resul
 		}
 		report_add_footer(report_custom);
 	}
-	report_add_file_footer(report_custom);
+	report_add_file_footer(report_custom, sfr);
 	report_free(report_custom);
 }
 
@@ -358,8 +352,8 @@ void searcher_main_loop(settings_t* sttngs)
 			}
 		}
 	}
-	report_add_file_footer(report_short);
-	report_add_file_footer(report_full);
+	report_add_file_footer(report_short, sfr);
+	report_add_file_footer(report_full, sfr);
 	
 	report_free(report_full);
 	report_free(report_short);

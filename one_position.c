@@ -144,7 +144,7 @@ void position_dump(position_t* pos)
 {
 	if (pos)
 	{
-		$log("(%d)time:%zd ra:(%s) decl:(%s) ra:%.2f decl:%.2f hour_ang:(%s) az:%.2f um:%.2f phase:%.2f range:%d mag:%.2f", pos->shadow, pos->timestamp, pos->ra_s, pos->decl_s, pos->ra, pos->decl, pos->hour_ang, pos->az, pos->um, pos->phase, pos->range, pos->mag);
+		$log("(%d)time:%ld ra:(%s) decl:(%s) ra:%.2f decl:%.2f hour_ang:(%s) az:%.2f um:%.2f phase:%.2f range:%d mag:%.2f", pos->shadow, pos->timestamp, pos->ra_s, pos->decl_s, pos->ra, pos->decl, pos->hour_ang, pos->az, pos->um, pos->phase, pos->range, pos->mag);
 	}
 	else
 	{
