@@ -5,18 +5,18 @@
 EFEM_DIR			=  efem_test/
 
 # day of observation (if not set getted current day)
-DAY					=  2010-02-10
+DAY					=  2013-08-05
 # start observation time
-START_OBSERVATION	=  16:00
+START_OBSERVATION	=  17:30
 # end observation time
-END_OBSERVATION		=  02:20
+END_OBSERVATION		=  04:00
 # minimal magnitude
-MAG					=  16.2
-UM					=  20.0
-RA_RATE_MIN			= +00500.0
-RA_Rate_MAX			=  1300.0
-DECL_RATE_MIN		= -280.0
-DECL_RATE_MAX		=  280.0
+MAG					=  17.8
+UM					=  15.0
+RA_RATE_MIN			= +00200.0
+RA_Rate_MAX			=  1700.0
+DECL_RATE_MIN		= -450.0
+DECL_RATE_MAX		=  450.0
 BLACK_LIST			=  95332 95301
 
 RA_POSITION_MIN		= 10 20 00

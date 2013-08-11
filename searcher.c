@@ -188,6 +188,15 @@ struct searcher_result_t* searcher_test_file(char *name, settings_t *sttngs, rep
 //			fprintf(result_full, "\n\n");
 			report_add_footer(report_full);
 		}
+		if ((hit == last_hit) && (hit == hit_done))
+		{
+			vec_add((void **)&sr, (void *)&sr_max_mag);
+
+			sr_tmp.in = 0;
+			sr_tmp.pos = (struct position_t *)position_cpy(last_pos);
+			sr_tmp.hit = hit_end_ephemerides;
+			vec_add((void **)&sr, (void *)&sr_tmp);
+		}
 		position_free(last_pos);
 		if (vec_count(sr))
 		{
@@ -246,17 +255,23 @@ void searcher_build_custom_report(settings_t* sttngs, struct searcher_file_resul
 	}
 
 	// sort files by hour angle
-	for (int i=0; i<vec_count(sfr)-1; i++)
+	if (vec_count(sfr) > 1)
 	{
-		for (int j=i; j<vec_count(sfr); j++)
+		time_t t1, t2;
+		for (int i=0; i<vec_count(sfr)-1; i++)
 		{
-			if (sfr[i].hour_angle>sfr[j].hour_angle)
+			for (int j=i; j<vec_count(sfr); j++)
 			{
-				struct searcher_file_result_t tmp_sfr = sfr[i];
-				sfr[i] = sfr[j];
-				sfr[j] = tmp_sfr;
+				t1 = (sfr[i].hour_angle > 12*60*60) ? sfr[i].hour_angle-12*60*60 : sfr[i].hour_angle+12*60*60;
+				t2 = (sfr[j].hour_angle > 12*60*60) ? sfr[j].hour_angle-12*60*60 : sfr[j].hour_angle+12*60*60;
+				if (t1>t2)
+				{
+					struct searcher_file_result_t tmp_sfr = sfr[i];
+					sfr[i] = sfr[j];
+					sfr[j] = tmp_sfr;
+				}
 			}
-		}	
+		}
 	}
 
 	char *report_custom_file_name = "./result_custom.txt";

@@ -26,7 +26,7 @@ int bad_params()
 
 int main(int argc, char *argv[])
 {
-	printf("Find Objects version 0.16\r\n");
+	printf("Find Objects version 0.17\r\n");
 	char *fn = "config.txt";
 	if (argc==2)
 	{

@@ -2,7 +2,7 @@
 
 # this parametr set directory with efemerid files,
 # name of files looks like "34234.txt" 
-EFEM_DIR			=  efem_test/
+EFEM_DIR			=  tests/efem/
 
 # day of observation (if not set getted current day)
 DAY					=  2010-02-10
