@@ -286,6 +286,23 @@ int *_observation_time_scale(report_t *report, struct searcher_result_t *sr_vec,
 	return buff;
 }
 
+float _magnitude(struct searcher_result_t *sr_vec)
+{
+	float rv = 0;
+	if (vec_count(sr_vec))
+	{
+		rv = sr_vec[0].pos->mag;
+		for (int i=1; i<vec_count(sr_vec); i++)
+		{
+			if (rv > sr_vec[i].pos->mag)
+			{
+				rv = sr_vec[i].pos->mag;
+			}
+		}
+	}
+	return rv;
+}
+
 int report_add_txt_custom_file_footer(report_t *report, struct searcher_file_result_t *sfr)
 {
 	char *tmp_str;
@@ -341,6 +358,8 @@ int report_add_txt_custom_file_footer(report_t *report, struct searcher_file_res
 		free(buff);
 		fprintf(report->rf, tmp_str);
 		free(tmp_str);
+
+		fprintf(report->rf, " %.1f", _magnitude(sfr[i].sr_vec));
 
 		fprintf(report->rf, "\r\n");
 	}
@@ -400,6 +419,8 @@ int report_add_html_custom_file_footer(report_t *report, struct searcher_file_re
 		free(buff);
 		fprintf(report->rf, tmp_str);
 		free(tmp_str);
+
+		fprintf(report->rf, " %.1f", _magnitude(sfr[i].sr_vec));
 
 		fprintf(report->rf, "<br>\r\n");
 	}

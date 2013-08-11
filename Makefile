@@ -28,7 +28,7 @@ $(PROG): $(OBJS)
 %.d:	%.c $(HFILES)
 	$(CC) $(CFLAGS) -MM $< > $@
 
-test:	$(PROG)
+tests:	$(PROG)
 	./$(PROG) ./tests/test1.txt
 	./$(PROG) ./tests/test2.txt
 	diff ./result_full.txt ./tests/result_full.txt
