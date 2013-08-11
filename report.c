@@ -313,7 +313,7 @@ int report_add_txt_custom_file_footer(report_t *report, struct searcher_file_res
 		}
 		tm += TIME_STEP_SIZE;
 	}
-	fprintf(report->rf, "\t\t%s\n", tmp_str);
+	fprintf(report->rf, "\t\t%s\r\n", tmp_str);
 	free(tmp_str);
 
 	for (int i=0; i<vec_count(sfr); i++)
@@ -342,7 +342,7 @@ int report_add_txt_custom_file_footer(report_t *report, struct searcher_file_res
 		fprintf(report->rf, tmp_str);
 		free(tmp_str);
 
-		fprintf(report->rf, "\n");
+		fprintf(report->rf, "\r\n");
 	}
 
 	return 0;
@@ -373,7 +373,7 @@ int report_add_html_custom_file_footer(report_t *report, struct searcher_file_re
 		}
 		tm += TIME_STEP_SIZE;
 	}
-	fprintf(report->rf, "<br>\n");
+	fprintf(report->rf, "<br>\r\n");
 
 	for (int i=0; i<vec_count(sfr); i++)
 	{
@@ -401,7 +401,7 @@ int report_add_html_custom_file_footer(report_t *report, struct searcher_file_re
 		fprintf(report->rf, tmp_str);
 		free(tmp_str);
 
-		fprintf(report->rf, "<br>\n");
+		fprintf(report->rf, "<br>\r\n");
 	}
 	fprintf(report->rf, "</div>\n</body></html>\n");
 
