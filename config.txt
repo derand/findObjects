@@ -25,3 +25,8 @@ RA_POSITION_MAX		= 14 20 00
 # can be TXT and HTML
 REPORT_TYPE			= TXT
 REPORT_HTML_FONT_SIZE = 10pt
+
+# orb file
+#  YES or NO default = YES
+USE_ORB_FILE		= YES
+#ORB_FILE			= orb130808

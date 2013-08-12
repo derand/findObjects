@@ -17,6 +17,7 @@ void read_line(FILE* f, char *buff);
 
 
 float _atof(const char* str, int* err);
+int _atoi(const char* str, int* err);
 time_t _atodate(const char* str, int* err);
 time_t _str2time(const char* str, int* err, const char *format);
 time_t _atotime(const char* str, int* err);

@@ -21,6 +21,7 @@
 #include "fastvec.h"
 #include "one_position.h"
 #include "report.h"
+#include "orb_position.h"
 
 
 int searcher_test_name(char *name, settings_t* sttngs);
@@ -238,7 +239,7 @@ struct searcher_result_t* searcher_test_file(char *name, settings_t *sttngs, rep
 	return sr;
 }
 
-void searcher_build_custom_report(settings_t* sttngs, struct searcher_file_result_t* sfr)
+void searcher_build_custom_report(settings_t* sttngs, struct searcher_file_result_t* sfr, orb_position_t **orb)
 {
 	// set hour angle
 	for (int i=0; i<vec_count(sfr); i++)
@@ -290,8 +291,43 @@ void searcher_build_custom_report(settings_t* sttngs, struct searcher_file_resul
 		}
 		report_add_footer(report_custom);
 	}
-	report_add_file_footer(report_custom, sfr);
+	report_add_file_footer(report_custom, sfr, orb);
 	report_free(report_custom);
+}
+
+orb_position_t **read_orb_file(settings_t* sttngs)
+{
+	orb_position_t **orb_vec;
+	vec_init((void **)&orb_vec, sizeof(orb_position_t *), 0, 15);
+
+	// read orb file
+	if (sttngs->use_orb_file)
+	{
+		orb_position_t *tmp_orb;
+
+		FILE *f;
+		if (f = fopen(sttngs->orb_file, "r"))
+		{
+			char *buff = malloc(sizeof(char)*1024);
+			while (!feof(f))
+			{
+				read_line(f, buff);
+				tmp_orb = orb_position_from_str(buff);
+				if (tmp_orb)
+				{
+					//$log("%s", buff);
+					//orb_position_dump(tmp_orb);
+					vec_add((void **)&orb_vec, &tmp_orb);
+					//$msg("%p %p", tmp_orb, orb_vec[vec_count(orb_vec)-1]);
+					//orb_position_dump(tmp_orb);
+					//orb_position_dump(orb_vec[vec_count(orb_vec)-1]);
+				}
+			}
+			free(buff);
+			fclose(f);
+		}
+	}
+	return orb_vec;
 }
 
 void searcher_main_loop(settings_t* sttngs)
@@ -300,7 +336,7 @@ void searcher_main_loop(settings_t* sttngs)
 	struct dirent *dirp;
 	if((dp=opendir(sttngs->dir)) == 0)
 	{
-		printf("can't open dir\n");
+		printf("can't open efem dir\n");
 		exit(1);
     }
 
@@ -316,24 +352,12 @@ void searcher_main_loop(settings_t* sttngs)
 		}
 	}
 	closedir(dp);
-/*	
-	char* file_name = "./result_short.txt";
-	FILE* res_short;
-	if (!(res_short=fopen("./result_short.txt", "w+")))
-	{
-		printf("Can't create file:\"%s\"\n", file_name);
-		exit(1);
-	}
-	file_name = "./result_full.txt";
-	FILE* res_full;
-	if (!(res_full=fopen("./result_full.txt", "w+")))
-	{
-		printf("Can't create file:\"%s\"\n", file_name);
-		exit(1);
-	}
-*/
-	struct searcher_file_result_t* sfr;
-	vec_init((void**)&sfr, sizeof(struct searcher_file_result_t), 0, vec_count(files));
+
+	orb_position_t **orb = read_orb_file(sttngs);
+	$msg("orb records read: %d", vec_count(orb));
+
+	struct searcher_file_result_t *sfr;
+	vec_init((void **)&sfr, sizeof(struct searcher_file_result_t), 0, vec_count(files));
 	struct searcher_file_result_t tmp_sfr;
 
 	char *report_short_file_name = "./result_short.txt";
@@ -367,8 +391,8 @@ void searcher_main_loop(settings_t* sttngs)
 			}
 		}
 	}
-	report_add_file_footer(report_short, sfr);
-	report_add_file_footer(report_full, sfr);
+	report_add_file_footer(report_short, sfr, orb);
+	report_add_file_footer(report_full, sfr, orb);
 	
 	report_free(report_full);
 	report_free(report_short);
@@ -376,7 +400,7 @@ void searcher_main_loop(settings_t* sttngs)
 //	fclose(res_full);
 //	fclose(res_short);
 
-	searcher_build_custom_report(sttngs, sfr);
+	searcher_build_custom_report(sttngs, sfr, orb);
 
 	for (int i=0; i<vec_count(sfr); i++)
 	{
@@ -389,6 +413,12 @@ void searcher_main_loop(settings_t* sttngs)
 		//free(tmp_sfr->filename);
 	}
 	vec_free(sfr);
+
+	for(int i=0; i<vec_count(orb); i++)
+	{
+		orb_position_free(orb[i]);
+	}
+	vec_free(orb);
 
 	for(int i=0; i<vec_count(files); i++)
 	{

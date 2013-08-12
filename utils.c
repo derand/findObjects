@@ -31,9 +31,9 @@ char* str_strip(const char* str)
 		if (++f>=e)
 			break;
 	while (str[e]==' ' || str[e]=='\t' || str[e]=='\n' || str[e]== 0x0D || str[e]== 0x0A)
-		if (f>=--e)
+		if (f>--e)
 			break;
-	if (f>=e)
+	if (f>e)
 		return 0;
 	e++;
 	char* rv = malloc(sizeof(char)*(e-f+1));
@@ -67,7 +67,7 @@ float _atof(const char* str, int* err)
 	char* tmp = str_strip(str);
 	for (int i=0; i<strlen(tmp); i++)
 	{
-		if ((tmp[i]<'0' || tmp[i]>'9') && tmp[i]!='.' && tmp[i]!=',' && tmp[i]!='-')
+		if ((tmp[i]<'0' || tmp[i]>'9') && tmp[i]!='.' && tmp[i]!=',' && tmp[i]!='-' && tmp[i]!='+')
 		{
 			if (err)
 				*err=i+1;
@@ -76,6 +76,24 @@ float _atof(const char* str, int* err)
 		}
 	}
 	float rv = atof(tmp);
+	sfree(tmp);
+	return rv;
+}
+
+int _atoi(const char *str, int *err)
+{
+	char *tmp = str_strip(str);
+	for (int i=0; i<strlen(tmp); i++)
+	{
+		if (((tmp[i]<'0' || tmp[i]>'9') && tmp[i]!='-' && tmp[i]!='+') || (tmp[i]=='-' && i>0))
+		{
+			if (err)
+				*err=i+1;
+			free(tmp);
+			return 0;
+		}
+	}
+	int rv = atoi(tmp);
 	sfree(tmp);
 	return rv;
 }

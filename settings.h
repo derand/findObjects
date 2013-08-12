@@ -34,6 +34,9 @@ typedef struct settings_t
 	enum report_type_e report_type;
 	
 	char *report_html_font_size;
+
+	int use_orb_file;
+	char *orb_file;
 } settings_t;
 
 settings_t* settings_init();

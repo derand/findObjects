@@ -11,6 +11,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <dirent.h>
+#include <ctype.h>
+#include <unistd.h>
 
 #include "utils.h"
 #include "settings.h"
@@ -26,6 +29,8 @@ settings_t* settings_init()
 		rv->dir = 0;
 		vec_init((void**)&rv->black_list, sizeof(char *), 0, 10);
 		rv->report_type = report_type_txt;
+		rv->use_orb_file = 1;
+		rv->orb_file = 0;
 	}
 	return rv;
 }
@@ -42,6 +47,7 @@ void settings_free(settings_t* sttngs)
 		vec_free(sttngs->black_list);
 
 		sfree(sttngs->dir);
+		sfree(sttngs->orb_file);
 		free(sttngs);
 	}
 }
@@ -112,6 +118,59 @@ settings_t* settings_read_from_file(const char* file)
 	while (rv->stop<rv->start)
 		rv->stop+=86400;
 
+	// search orb file
+	if (rv->use_orb_file && !rv->orb_file)
+	{
+		DIR *dp;
+		struct dirent *dirp;
+		if((dp=opendir(".")) == 0)
+		{
+			printf("can't open current dir\n");
+			exit(1);
+   		}
+   		int idx = 0;
+   		int tmp_idx;
+		while ((dirp = readdir(dp))!=0)
+		{
+			if (strlen(dirp->d_name)>3)
+			{
+				if (toupper(dirp->d_name[0]) == 'O' &&
+					toupper(dirp->d_name[1]) == 'R' &&
+					toupper(dirp->d_name[2]) == 'B' &&
+					dirp->d_name[3] >= '0' && dirp->d_name[3] <= '9')
+				{
+					tmp_idx = atoi(&(dirp->d_name[3]));
+					if (!rv->orb_file || tmp_idx > idx)
+					{
+						sfree(rv->orb_file);
+						rv->orb_file = strdup(dirp->d_name);
+						idx = tmp_idx;
+					}
+				}
+			}
+		}
+		closedir(dp);
+	}
+
+	// check orb file exist
+	if (rv->use_orb_file)
+	{
+		if (rv->orb_file)
+		{
+			if (access(rv->orb_file, F_OK) == -1)
+			{
+				rv->use_orb_file = 0;
+				$msg("Orb file \"%s\" does not exist", rv->orb_file);
+			}
+		}
+		else
+		{
+			$msg("%s", "Can't find orb file on current directory");
+			rv->use_orb_file = 0;
+		}
+	}
+
+
 	return rv;
 }
 
@@ -123,6 +182,11 @@ void settings_dump(settings_t* sttngs)
 	for (int i=0; i<vec_count(sttngs->black_list); i++)
 	{
 		printf(" %s", sttngs->black_list[i]);
+	}
+	printf("\n\tuse_orb_file: %s", sttngs->use_orb_file?"Yes":"No");
+	if (sttngs->orb_file)
+	{
+		printf("\n\torb_file: %s", sttngs->orb_file);
 	}
 	printf("\n\n");
 	free(start_str);
@@ -230,6 +294,12 @@ int settings_set_variable(const char* key, const char* val, settings_t* sttngs)
 	} else if (strcmp(_key, "REPORT_HTML_FONT_SIZE")==0)
 	{
 		sttngs->report_html_font_size = strdup(_val);
+	} else if (strcmp(_key, "USE_ORB_FILE")==0)
+	{
+		sttngs->use_orb_file = (strcmp(_val, "NO")!=0);
+	} else if (strcmp(_key, "ORB_FILE")==0)
+	{
+		sttngs->orb_file = strdup(_val);
 	}
 	sfree(_val);
 	sfree(_key);

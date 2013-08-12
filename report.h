@@ -13,6 +13,7 @@ enum hit_e;
 //enum report_type_e;
 struct settings_t;
 struct searcher_file_result_t;
+struct orb_position_t **orb;
 
 typedef enum
 {
@@ -39,4 +40,4 @@ int report_add_title(report_t *, const char *);
 int report_add_footer(report_t *);
 int report_add_hit(report_t *, enum hit_e );
 int report_add_file_title(report_t *);
-int report_add_file_footer(report_t *, struct searcher_file_result_t *);
+int report_add_file_footer(report_t *, struct searcher_file_result_t *, struct orb_position_t **orb);

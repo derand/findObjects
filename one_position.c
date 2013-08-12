@@ -71,7 +71,7 @@ position_t* position_from_str(const char *str)
 	k=-1;
 	if (vec_count(as_array)==18 || vec_count(as_array)==17)
 	{
-		int err;
+		int err = 0;
 		rv->timestamp = _atodate(as_array[++k], &err);
 		if (err) goto _err01;
 		rv->timestamp += _atotime(as_array[++k], &err);

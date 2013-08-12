@@ -19,6 +19,7 @@
 #include "one_position.h"
 #include "utils.h"
 #include "fastvec.h"
+#include "orb_position.h"
 
 
 static char* hit_pref[]= {"--","НЗ","СЛ","БС","ТТ","НН","КК","ЛУ"};
@@ -303,7 +304,7 @@ float _magnitude(struct searcher_result_t *sr_vec)
 	return rv;
 }
 
-int report_add_txt_custom_file_footer(report_t *report, struct searcher_file_result_t *sfr)
+int report_add_txt_custom_file_footer(report_t *report, struct searcher_file_result_t *sfr, struct orb_position_t **orb)
 {
 	char *tmp_str;
 	char *tmp;
@@ -330,18 +331,37 @@ int report_add_txt_custom_file_footer(report_t *report, struct searcher_file_res
 		}
 		tm += TIME_STEP_SIZE;
 	}
-	fprintf(report->rf, "\t\t%s\r\n", tmp_str);
+	fprintf(report->rf, "\tВЖИ\t%s\r\n", tmp_str);
 	free(tmp_str);
 
+	int v;
 	for (int i=0; i<vec_count(sfr); i++)
 	{
 		tmp_str = strdup(sfr[i].filename);
 		if((tmp = strstr(tmp_str, ".")) != NULL)
 		{
-			//tmp[0] = '\0';
+			tmp[0] = '\0';
 		}
-		fprintf(report->rf, "%s\t", tmp_str);
+
+		v = -1;
+		for (j=0; j<vec_count(orb); j++)
+		{
+			if (strcmp(orb[j]->name, tmp_str) == 0)
+			{
+				v = orb[j]->vgi;
+				break;
+			}
+		}
+		if (v>0)
+		{
+			fprintf(report->rf, "%s %3d\t", tmp_str, v);
+		} 
+		else
+		{
+			fprintf(report->rf, "%s ---\t", tmp_str);
+		}
 		free(tmp_str);
+		//$msg("%d %s", vec_count(orb), tmp_str);
 
 		int *buff = malloc(sizeof(int)*steps);
 		buff = _observation_time_scale(report, sfr[i].sr_vec, buff, steps);
@@ -367,7 +387,7 @@ int report_add_txt_custom_file_footer(report_t *report, struct searcher_file_res
 	return 0;
 }
 
-int report_add_html_custom_file_footer(report_t *report, struct searcher_file_result_t *sfr)
+int report_add_html_custom_file_footer(report_t *report, struct searcher_file_result_t *sfr, struct orb_position_t **orb)
 {
 	char *tmp_str;
 	char *tmp;
@@ -394,14 +414,31 @@ int report_add_html_custom_file_footer(report_t *report, struct searcher_file_re
 	}
 	fprintf(report->rf, "<br>\r\n");
 
+	int v;
 	for (int i=0; i<vec_count(sfr); i++)
 	{
 		tmp_str = strdup(sfr[i].filename);
 		if((tmp = strstr(tmp_str, ".")) != NULL)
 		{
-			//tmp[0] = '\0';
+			tmp[0] = '\0';
 		}
-		fprintf(report->rf, "%s&nbsp;&nbsp;", tmp_str);
+		v = -1;
+		for (j=0; j<vec_count(orb); j++)
+		{
+			if (strcmp(orb[j]->name, tmp_str) == 0)
+			{
+				v = orb[j]->vgi;
+				break;
+			}
+		}
+		if (v>0)
+		{
+			fprintf(report->rf, "%s&nbsp;%3d&nbsp;", tmp_str, v);
+		} 
+		else
+		{
+			fprintf(report->rf, "%s&nbsp;---&nbsp;", tmp_str);
+		}
 		free(tmp_str);
 
 		int *buff = malloc(sizeof(int)*steps);
@@ -429,7 +466,7 @@ int report_add_html_custom_file_footer(report_t *report, struct searcher_file_re
 	return 0;
 }
 
-int report_add_file_footer(report_t *report, struct searcher_file_result_t *sfr)
+int report_add_file_footer(report_t *report, struct searcher_file_result_t *sfr, struct orb_position_t **orb)
 {
 	int rv=0;
 	switch (report->type)
@@ -437,7 +474,7 @@ int report_add_file_footer(report_t *report, struct searcher_file_result_t *sfr)
 		case report_type_txt:
 				if (report->style==report_style_custom)
 				{
-					rv = report_add_txt_custom_file_footer(report, sfr);
+					rv = report_add_txt_custom_file_footer(report, sfr, orb);
 				}				
 				break;
 		case report_type_html:
@@ -446,7 +483,7 @@ int report_add_file_footer(report_t *report, struct searcher_file_result_t *sfr)
 					fprintf(report->rf, "</body></html>\n");
 				} else if (report->style==report_style_custom)
 				{
-					rv = report_add_html_custom_file_footer(report, sfr);
+					rv = report_add_html_custom_file_footer(report, sfr, orb);
 				} else if (report->style==report_style_full)
 				{
 					fprintf(report->rf, "</body></html>\n");
