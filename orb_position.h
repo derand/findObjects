@@ -7,7 +7,7 @@
  *
  */
 
-// if you added void* change "position_cpy" function
+// if you added void* change "orb_position_cpy" function
 typedef struct orb_position_t
 {
 	char *name;

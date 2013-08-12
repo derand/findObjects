@@ -118,13 +118,6 @@ position_t* position_from_str(const char *str)
 		
 		rv->time_str = malloc(strlen(as_array[0])+strlen(as_array[1])+2);
 		sprintf(rv->time_str, "%s %s", as_array[0], as_array[1]);
-
-//		$log("%s %s", str, rv->time_str);
-	}
-
-	for(int i=0; i<vec_count(as_array); i++)
-	{
-//		$log("%d(%d)\t\"%s\"", i, vec_count(as_array), as_array[i]);
 	}
 	goto _ext01;
 	
@@ -134,7 +127,6 @@ _err01:
 	rv=0;
 
 _ext01:
-//	position_dump(rv);
 	vec_free(as_array);	
 	free(line);
 	return rv;

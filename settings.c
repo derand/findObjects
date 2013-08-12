@@ -98,7 +98,6 @@ settings_t* settings_read_from_file(const char* file)
 	{
 		time_t now = time(0);
 		struct tm* tm = gmtime(&now);
-//		$msg("%d-%d-%d", tm->tm_year, tm->tm_mon, tm->tm_mday);
 		tm->tm_hour = 0;
 		tm->tm_min = 0;
 		tm->tm_sec = 0;
@@ -238,8 +237,6 @@ int settings_set_variable(const char* key, const char* val, settings_t* sttngs)
 		sttngs->dir = strdup(_val);
 	} else if (strcmp(_key, "BLACK_LIST")==0)
 	{
-//		el = strdup(dirp->d_name);
-//		vec_add((void **)&files, (void *)&el);
 		int i=0;
 		char* str = _val;
 		char* tmp;

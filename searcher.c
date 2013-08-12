@@ -116,7 +116,6 @@ struct searcher_result_t* searcher_test_file(char *name, settings_t *sttngs, rep
 
 		char *buff = malloc(sizeof(char)*1024);
 		int first=1;
-//		char* ch;
 		while (!feof(f))
 		{
 			read_line(f, buff);
@@ -315,12 +314,7 @@ orb_position_t **read_orb_file(settings_t* sttngs)
 				tmp_orb = orb_position_from_str(buff);
 				if (tmp_orb)
 				{
-					//$log("%s", buff);
-					//orb_position_dump(tmp_orb);
 					vec_add((void **)&orb_vec, &tmp_orb);
-					//$msg("%p %p", tmp_orb, orb_vec[vec_count(orb_vec)-1]);
-					//orb_position_dump(tmp_orb);
-					//orb_position_dump(orb_vec[vec_count(orb_vec)-1]);
 				}
 			}
 			free(buff);
@@ -374,7 +368,6 @@ void searcher_main_loop(settings_t* sttngs)
 	for(int i=0; i<vec_count(files); i++)
 	//for(int i=5; i<7; i++)
 	{
-//		searcher_test_file(files[i], sttngs, res_short, res_full);
 		struct searcher_result_t *sr = searcher_test_file(files[i], sttngs, report_short, report_full);
 		if (sr != NULL)		// for custom report only
 		{
@@ -396,9 +389,6 @@ void searcher_main_loop(settings_t* sttngs)
 	
 	report_free(report_full);
 	report_free(report_short);
-
-//	fclose(res_full);
-//	fclose(res_short);
 
 	searcher_build_custom_report(sttngs, sfr, orb);
 

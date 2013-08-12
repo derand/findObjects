@@ -90,7 +90,6 @@ _err01:
 	rv=0;
 
 _ext01:
-//	position_dump(rv);
 	vec_free(as_array);	
 	free(line);
 	return rv;
